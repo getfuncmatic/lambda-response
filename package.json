@@ -14,7 +14,7 @@
     "serverless",
     "express"
   ],
-  "author": "Daniel Jhin Yoo <danieljyoo@funcmatic.com> (https://github.com/danieljyoo)",
+  "author": "Daniel Jhin Yoo <danieljyoo@gmail.com> (https://github.com/danieljyoo)",
   "license": "MIT",
   "homepage": "https://github.com/getfuncmatic/lambda-response",
   "repository": {
