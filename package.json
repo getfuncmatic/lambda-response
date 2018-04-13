@@ -1,6 +1,6 @@
 {
   "name": "@funcmatic/lambda-response",
-  "version": "1.0.0-alpha",
+  "version": "1.0.1-alpha",
   "description": "Express-like HTTP response methods (e.g. res.json(), res.sendFile()) to be used in AWS Lambda Node functions connected to API Gateway using AWS Lambda Proxy Integration.",
   "main": "index.js",
   "scripts": {
