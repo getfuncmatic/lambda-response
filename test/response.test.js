@@ -56,9 +56,11 @@ describe('Error response', () => {
     var res = createResponse()
     var err = new Error("This message should be hidden")
     expect(res.error(err)).toMatchObject({
-      statusCode: 500
+      statusCode: 500,
+      body: JSON.stringify({
+        errorMessage: "Internal Server Error"
+      })
     })
-    expect(res.body).toBe(JSON.stringify('null'))
   })
   it ('should format a manually enhanced error with status and message', async () => {
     var res = createResponse()
@@ -74,7 +76,9 @@ describe('Error response', () => {
     err2.statusCode = 502
     expect(res.error(err2)).toMatchObject({
       statusCode: 502,
-      body: JSON.stringify('null')
+      body: JSON.stringify({
+        errorMessage: "Bad Gateway"
+      })
     })
     err2.expose = true
     expect(res.error(err2)).toMatchObject({
@@ -97,7 +101,9 @@ describe('Error response', () => {
     var err2 = createError.NotImplemented()
     expect(res.error(err2)).toMatchObject({
       statusCode: 501,
-      body: JSON.stringify('null')
+      body: JSON.stringify({
+        errorMessage: "Not Implemented"
+      })
     })
     var err3 = createError(501, 'Not implemented and you will see this message', { expose: true })
     expect(res.error(err3)).toMatchObject({
