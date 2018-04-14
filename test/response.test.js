@@ -5,6 +5,7 @@ describe('Response status and headers', () => {
   it ('should set the status code', async () => {
     var res = createResponse()
     expect(res.status(500)).toMatchObject({ "statusCode": 500 })
+    expect(res.statusDesc()).toBe('Internal Server Error')
   })
   it ('should set the header value', async () => {
     var res = createResponse()
