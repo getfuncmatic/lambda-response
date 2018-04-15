@@ -40,6 +40,18 @@ describe('Response status and headers', () => {
   })
 }) 
 
+describe('createResponse handler', () => {
+  it ('should return data as is if already in Lambda Proxy Integration format', async () => {
+    var ret = {
+      statusCode: 400,
+      body: "hello"
+    }
+    expect(await createResponse(ret)).toMatchObject({
+      statusCode: 400,
+      body: "hello"
+    })
+  })
+})
 describe('JSON response', () => {
   it ('should set a simple body as json and set the content-type', async () => {
     var res = createResponse()
