@@ -1,3 +1,4 @@
+const fs = require('fs')
 const createResponse = require('../lib/response')
 const createError = require('http-errors')
 
@@ -51,6 +52,46 @@ describe('JSON response', () => {
     })
   })
 })
+
+describe('Redirect response', () => {
+  it ('should return a 302 Found by default', () => {
+    var res = createResponse()
+    expect(res.redirect("https://google.com")).toMatchObject({
+      statusCode: 302,
+      headers: {
+        'location': "https://google.com"
+      }
+    })
+  })
+  it ('should preserve redirect status set by user', () => {
+    var res = createResponse()
+    // 301 Moved Permanently
+    expect(res.status(301).redirect('/hello/world')).toMatchObject({
+      statusCode: 301
+    })
+  })
+})
+
+describe('File response', () => {
+  it ('should read an image file as a base64 string', () => {
+    var JPEGJPGBASE64 = "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k="
+    var data = fs.readFileSync(`${__dirname}/jpeg.jpg`, 'base64')
+    expect(data).toBe(JPEGJPGBASE64)
+  })
+  it ('should format a jpg as a base64 body relative to CWD', () => {
+    var JPEGJPGBASE64 = "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k="
+    var res = createResponse()
+    res.file('/test/jpeg.jpg')
+    expect(res).toMatchObject({
+      statusCode: 200,
+      headers: {
+        "content-type": "image/jpeg"
+      },
+      body: JPEGJPGBASE64
+    })
+  })
+})
+
 
 describe('Error response', () => {
   it ('should format a vanilla error as 500 with no message', async () => {
