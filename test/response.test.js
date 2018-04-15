@@ -72,26 +72,89 @@ describe('Redirect response', () => {
   })
 })
 
-describe('File response', () => {
+const JPEGJPGBASE64 = "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k="
+
+describe('Blob response', () => {
   it ('should read an image file as a base64 string', () => {
-    var JPEGJPGBASE64 = "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k="
     var data = fs.readFileSync(`${__dirname}/jpeg.jpg`, 'base64')
     expect(data).toBe(JPEGJPGBASE64)
   })
-  it ('should format a jpg as a base64 body relative to CWD', () => {
-    var JPEGJPGBASE64 = "/9j/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k="
+  it ('should be able to handle relative and absolute filenames', async () => {
     var res = createResponse()
-    res.file('/test/jpeg.jpg')
-    expect(res).toMatchObject({
-      statusCode: 200,
+    expect(await res.blob("test/jpeg.jpg")).toMatchObject({
+      headers: {
+        "content-type": "image/jpeg"
+      },
+      body: JPEGJPGBASE64
+    })
+    var res = createResponse()
+    expect(await res.blob(`${__dirname}/jpeg.jpg`)).toMatchObject({
       headers: {
         "content-type": "image/jpeg"
       },
       body: JPEGJPGBASE64
     })
   })
+  it ('should be able to handle a file as a readablestream', async () => {
+    var res = createResponse()
+    var readable = fs.createReadStream(`${__dirname}/jpeg.jpg`)
+    expect(await res.blob(readable)).toMatchObject({
+      body: JPEGJPGBASE64
+    })
+  })
+  it ('should be able to handle a file as a buffer', async () => {
+    var res = createResponse()
+    var buf = fs.readFileSync(`${__dirname}/jpeg.jpg`)
+    expect(await res.blob(buf)).toMatchObject({
+      body: JPEGJPGBASE64
+    })
+  })
+  it ('should be able to handle a file as a typed array', async () => {
+    var res = createResponse()
+    const HELLOBASE64 = 'aGVsbG8='
+    var hello = new Uint8Array([ 104, 101, 108, 108, 111 ])
+    var buf = Buffer.from(hello.buffer)
+    expect(buf.toString('utf-8')).toBe('hello')
+    expect(buf.toString('base64')).toBe(HELLOBASE64)
+    expect(await res.blob(hello)).toMatchObject({
+      body: HELLOBASE64
+    })
+  })
 })
 
+describe('Download response', () => {
+  it ('should set the Content-Disposition header as attachment', async () => {
+    var res = createResponse()
+    expect(await res.download("test/jpeg.jpg")).toMatchObject({
+      headers: {
+        "content-disposition": "attachment"
+      }
+    })
+    res = createResponse()
+    expect(await res.download("test/jpeg.jpg", { filename: "My Picture.jpeg" })).toMatchObject({
+      headers: {
+        "content-disposition": `attachment; filename="My Picture.jpeg"`
+      } 
+    })
+  })
+})
+
+describe('File response', () => {
+  it ('should set the Content-Disposition header as inline', async () => {
+    var res = createResponse()
+    expect(await res.file("test/jpeg.jpg")).toMatchObject({
+      headers: {
+        "content-disposition": "inline"
+      }
+    })
+    res = createResponse()
+    expect(await res.file("test/jpeg.jpg", { filename: "My Picture.jpeg" })).toMatchObject({
+      headers: {
+        "content-disposition": `inline; filename="My Picture.jpeg"`
+      } 
+    })
+  })
+})
 
 describe('Error response', () => {
   it ('should format a vanilla error as 500 with no message', async () => {
