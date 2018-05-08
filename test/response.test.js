@@ -1,6 +1,7 @@
 const fs = require('fs')
 const createResponse = require('../lib/response')
 const createError = require('http-errors')
+const axios = require('axios')
 
 describe('Response status and headers', () => {
   it ('should set the status code', async () => {
@@ -166,6 +167,21 @@ describe('File response', () => {
       } 
     })
   })
+})
+
+describe('Network data response', () => {
+  it ('should request an image file and return it', async () => {
+    var resp = await axios.get('https://www.google.com/favicon.ico')
+    console.log("resp.data", resp.data)
+    var res = createResponse()
+    await res.type('ico').blob(resp.data)
+    expect(res).toMatchObject({
+      headers: { 'content-type': 'image/x-icon' },
+      body: expect.anything(),
+      isBase64Encoded: true
+    })
+    console.log("RES", res)
+  })  
 })
 
 describe('Error response', () => {
