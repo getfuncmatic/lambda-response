@@ -171,8 +171,35 @@ describe('File response', () => {
 
 describe('Network data response', () => {
   it ('should request an image file and return it', async () => {
-    var resp = await axios.get('https://www.google.com/favicon.ico')
+    //var resp = await axios.get('https://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png')
+    var resp = await axios.request({
+      responseType: 'arraybuffer',
+      //url: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png',
+      url: 'https://google.com/favicon.ico',
+      method: 'get'
+    })
+    // GET request for remote image
+// axios({
+//   method:'get',
+//   url:'http://bit.ly/2mTM3nY',
+//   responseType:'stream'
+// })
+//   .then(function(response) {
+//   response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+// });
+  // return a promise and resolve when download finishes
+  // return new Promise((resolve, reject) => {
+  //   response.data.on('end', () => {
+  //     resolve()
+  //   })
+
+  //   response.data.on('error', () => {
+  //     reject()
+  //   })
+  // })
+
     console.log("resp.data", resp.data)
+    fs.writeFileSync("test/download.ico", resp.data)
     var res = createResponse()
     await res.type('ico').blob(resp.data)
     expect(res).toMatchObject({
