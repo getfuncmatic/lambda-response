@@ -197,8 +197,6 @@ describe('Network data response', () => {
   //     reject()
   //   })
   // })
-
-    console.log("resp.data", resp.data)
     fs.writeFileSync("test/download.ico", resp.data)
     var res = createResponse()
     await res.type('ico').blob(resp.data)
@@ -207,11 +205,19 @@ describe('Network data response', () => {
       body: expect.anything(),
       isBase64Encoded: true
     })
-    console.log("RES", res)
   })  
 })
 
 describe('Error response', () => {
+  it ('should default as 404 not found', async () => {
+    var res = createResponse()
+    expect(res).toMatchObject({
+      statusCode: 404,
+      body: JSON.stringify({
+        errorMessage: "Not Found"
+      })
+    })
+  })
   it ('should format a vanilla error as 500 with no message', async () => {
     var res = createResponse()
     var err = new Error("This message should be hidden")
@@ -220,6 +226,24 @@ describe('Error response', () => {
       body: JSON.stringify({
         errorMessage: "Internal Server Error"
       })
+    })
+  })
+  it ('should expose a custom error message', async () => {
+    var res = createResponse()
+    res.httperror(500, 'My Custom Message', { expose: true })
+    expect(res).toMatchObject({
+      statusCode: 500,
+      body: JSON.stringify({
+        errorMessage: "My Custom Message"
+      })
+    })
+  })
+  it ('should expose a custom error message and stack trace', async () => {
+    var res = createResponse()
+    res.httperror(500, 'My Custom Message', { expose: true, stacktrace: true })
+    expect(JSON.parse(res.body)).toMatchObject({
+      errorMessage: "My Custom Message",
+      errorStack: expect.anything()
     })
   })
   it ('should format a manually enhanced error with status and message', async () => {
@@ -232,7 +256,7 @@ describe('Error response', () => {
         errorMessage: err.message
       })
     })
-    var err2 = new Error("Bad Gateway")
+    var err2 = new Error("Custom Error Message")
     err2.statusCode = 502
     expect(res.error(err2)).toMatchObject({
       statusCode: 502,
@@ -244,7 +268,7 @@ describe('Error response', () => {
     expect(res.error(err2)).toMatchObject({
       statusCode: 502,
       body: JSON.stringify({
-        errorMessage: "Bad Gateway"
+        errorMessage: "Custom Error Message"
       })
     })
   })
